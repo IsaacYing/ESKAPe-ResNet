@@ -9,16 +9,16 @@ This work establishes the proof-of-principle for label-free, hardware-minimal ra
 
 ## Model
 
-ESKAPe-ResNet identifies six ESKAPE pathogens from single bacterial cells:
+ESKAPe-ResNet identifies six ESKAPe pathogens from single bacterial cells(e for *Escherichia coli* substituting *Enterobacter spp.*):
 
 | Class | Species |
 |:-----:|:--------|
-| Efm | *Enterococcus faecium* |
-| Sau | *Staphylococcus aureus* |
-| Kpn | *Klebsiella pneumoniae* |
-| Aba | *Acinetobacter baumannii* |
-| Pae | *Pseudomonas aeruginosa* |
-| Eco | *Escherichia coli* |
+| *Efm* | *Enterococcus faecium* |
+| *Sau* | *Staphylococcus aureus* |
+| *Kpn* | *Klebsiella pneumoniae* |
+| *Aba* | *Acinetobacter baumannii* |
+| *Pae* | *Pseudomonas aeruginosa* |
+| *Eco* | *Escherichia coli* |
 
 ## Repository Structure
 ```
