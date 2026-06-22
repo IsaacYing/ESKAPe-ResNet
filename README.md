@@ -25,6 +25,8 @@ ESKAPe-ResNet identifies six ESKAPe pathogens from single bacterial cells(e for 
 ESKAPe-ResNet/
 ├── ESKAPe_Resnet.pth          # Pre-trained model weights (PyTorch)
 ├── ESKAPe_Resnet.py           # Model training script
+├── build_training_batches.py  # Dataset batch construction for model training
+├── NT_controller.py           # Microscope control software
 └── README.md                   # This file
 ```
 
@@ -55,6 +57,29 @@ pip install omnipose==1.0.6
 > **Note:** Adjust the PyTorch CUDA version (`cu116`) according to your local CUDA installation.
 
 ## Usage
+
+### Microscope Image Acquisition
+
+For automated image acquisition using the bright-field microscopy platform:
+
+```bash
+python NT_controller.py
+```
+
+> **Note:** Ensure your microscope hardware is properly connected and configured. Adjust device parameters (e.g., COM port, camera settings) in `NT_controller.py` as needed.
+
+### Dataset Preparation
+
+Before training, run the dataset batch construction script:
+
+```bash
+python build_training_batches.py
+```
+
+> **Note:** Modify the input image paths and output directory in `build_training_batches.py` to match your local data structure.
+
+
+
 
 ### Load Pre-trained Weights
 
