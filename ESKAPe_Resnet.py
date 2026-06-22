@@ -1,3 +1,14 @@
+"""
+Train ResNet50 to classify 6 ESKAPE bacterial species from single-cell microscopy patches.
+
+Species: Eco(0), Sau(1), Kpn(2), Aba(3), Pae(4), Efm(5)
+
+Data: .pkl batches of 224x224 images, merged from multiple source directories.
+Augmentation: random sharpness, flip, rotation (train only).
+Features: pretrained ResNet50, ReduceLROnPlateau, early stopping, per-class metrics.
+Outputs: best_model_*.pth, checkpoint_*.pth, training logs in logs/
+"""
+
 import os
 import torch
 import torch.nn as nn
