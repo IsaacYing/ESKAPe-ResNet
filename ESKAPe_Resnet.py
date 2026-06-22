@@ -10,28 +10,25 @@ Outputs: best_model_*.pth, checkpoint_*.pth, training logs in logs/
 """
 
 import os
-import torch
-import torch.nn as nn
-import torch.optim as optim
 import datetime
 import random
 import string
 import pickle as pk
+
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from collections import Counter
-from torchvision import models, transforms, datasets
-from torch.utils.data import DataLoader, Dataset, random_split, ConcatDataset
-from torchvision.datasets import ImageFolder
-from torchvision.models import  ResNet50_Weights
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix, f1_score, roc_auc_score, precision_score, recall_score
-from torchvision import models as torch_models
-from torch.optim import Adam
-from torch.utils.data import Subset
-from torch.nn import DataParallel
 from PIL import Image
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader, Dataset, random_split, ConcatDataset
+from torch.nn import DataParallel
+from torchvision import models as torch_models, transforms
+from torchvision.models import ResNet50_Weights
+from sklearn.metrics import confusion_matrix, f1_score, roc_auc_score
 
 def generate_random_string():
     return ''.join(random.choice(string.ascii_lowercase) for _ in range(3))
@@ -79,31 +76,13 @@ class CustomDataset(Dataset):
         self.current_file = None
         self.current_batch = None
         
-        self.classes1 = {'ECO_MG1655': 0, 'S_ATCC43300': 1, 'Kp_ATCC43816': 2, 
-                         'A_ATCC19606': 3, 'P_PA01': 4, 'P_PA14': 4, 
-                         'P_PAK': 4, 'VAE_21B188': 5}
-        self.classes2 = {'A_ABA': 3, 'A_AB09': 3}
+        self.classes = {'Eco': 0, 'Sau': 1, 'Kpn': 2, 
+                         'Aba': 3, 'Pae': 4, 'Efm': 5}
         
         self._collect_cell_records()
         
     def _collect_cell_records(self):
-        for cls_name, label in self.classes1.items():
-            class_dir = os.path.join(self.root_dir, cls_name)
-            if not os.path.isdir(class_dir):
-                continue
-            for batch_file in os.listdir(class_dir):
-                if batch_file.lower().endswith('.pkl'):
-                    batch_path = os.path.join(class_dir, batch_file)
-                    try:
-                        with open(batch_path, 'rb') as f:
-                            batch_cell = pk.load(f)
-                        for cid in batch_cell:
-                            self.file_paths.append(batch_path)
-                            self.cell_records.append((batch_path, cid, label))
-                    except Exception as e:
-                        record(f"Failed to load file header: {batch_path}, error:{str(e)}")
-                        
-        for cls_name, label in self.classes2.items():
+        for cls_name, label in self.classes.items():
             class_dir = os.path.join(self.root_dir, cls_name)
             if not os.path.isdir(class_dir):
                 continue
@@ -154,7 +133,7 @@ class CustomDataset(Dataset):
 
         return img_pil, label
 
-def train_model(model, dataloaders, criterion, optimizer, scheduler, num_epochs=25, patience=10):
+def train_model(model, dataloaders, criterion, optimizer, scheduler,  num_classes=6, num_epochs=25, patience=10):
     best_val_loss = float('inf')
     best_acc = 0.0
     best_f1 = 0.0
@@ -247,7 +226,7 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler, num_epochs=
             
             all_labels.extend(labels.cpu().numpy())
             all_preds.extend(preds.cpu().numpy())
-            all_probs.extend(probs.cpu().numpy())
+            all_probs.append(probs.cpu().numpy())
 
             for i in range(len(labels)):
                 label = labels[i].item()
@@ -266,6 +245,7 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler, num_epochs=
         epoch_loss = running_loss / total_samples
         epoch_acc = running_corrects.double() / total_samples
         epoch_f1 = f1_score(all_labels, all_preds, average='weighted')
+        all_probs = np.concatenate(all_probs, axis=0)
         
         try:
             epoch_auc = roc_auc_score(all_labels, all_probs, multi_class='ovr', average='weighted')
@@ -372,42 +352,28 @@ os.makedirs('logs', exist_ok=True)
 
 
 
-data_dir1 = "./20250707_model/1_main"
+data_dir1 = "path1"
 dataset1 = CustomDataset(root_dir=data_dir1, transform=None)
 data_len1 = len(dataset1)
 record(f"dataset1 length: {data_len1}")
 
-data_dir2 = "./20250707_model/2_aba"
+data_dir2 = "path2"
 dataset2 = CustomDataset(root_dir=data_dir2, transform=None)
 data_len2 = len(dataset2)
 record(f"dataset2 length: {data_len2}")
 
-data_dir3 = "./20250707_model/3_flu"
+data_dir3 = "path3"
 dataset3 = CustomDataset(root_dir=data_dir3, transform=None)
 data_len3 = len(dataset3)
 record(f"dataset3 length: {data_len3}")
 
-data_dir4 = "./20250707_model/4"
+data_dir4 = "path4"
 dataset4 = CustomDataset(root_dir=data_dir4, transform=None)
 data_len4 = len(dataset4)
 record(f"dataset4 length: {data_len4}")
 
-data_dir5 = "./20250707_model/251001"
-dataset5 = CustomDataset(root_dir=data_dir5, transform=None)
-data_len5 = len(dataset5)
-record(f"dataset5 length: {data_len5}")
 
-data_dir6 = "./20250707_model/251020"
-dataset6 = CustomDataset(root_dir=data_dir6, transform=None)
-data_len6 = len(dataset6)
-record(f"dataset6 length: {data_len6}")
-
-data_dir7 = "./20250707_model/251023"
-dataset7 = CustomDataset(root_dir=data_dir7, transform=None)
-data_len7 = len(dataset7)
-record(f"dataset7 length: {data_len7}")
-
-combined_dataset = ConcatDataset([dataset1, dataset2, dataset3, dataset4, dataset5, dataset6, dataset7])
+combined_dataset = ConcatDataset([dataset1, dataset2, dataset3, dataset4])
 data_len = len(combined_dataset)
 record(f"all dataset length: {data_len}")
 
