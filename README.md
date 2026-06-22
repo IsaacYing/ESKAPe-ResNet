@@ -30,6 +30,26 @@ ESKAPe-ResNet/
 └── README.md                   # This file
 ```
 
+## Imaging Platform
+
+### NikonTi-Brightfield-AutoImaging
+
+The automated bright-field microscopy platform is built on a Nikon Ti2 inverted microscope equipped with motorized stage, LED illumination, and high-resolution CMOS camera. Image acquisition is controlled by a custom Python-based automation framework (`NT_controller.py`) that integrates hardware control, automated stage movement, plate scanning, and autofocus into a unified acquisition environment.
+
+**Key capabilities:**
+- **Automated bright-field imaging** — single-shot acquisition with adjustable exposure and ImageJ-compatible TIFF export
+- **Autofocus** — two modes: (i) frequency-based focus estimation via Fourier transformation of Z-stacks; (ii) AI-assisted focal prediction from bright-field images
+- **Multi-well plate scanning** — supports 6/12/24/48/96-well plates with four-point calibration for coordinate generation
+- **Metadata-rich output** — each TIFF includes objective info, pixel size, numerical aperture, exposure, XY coordinates, Z positions, and timestamps
+
+**Typical acquisition workflow:**
+1. Configure microscope parameters and plate type
+2. Calibrate plate coordinates (four-point)
+3. Select target wells and configure autofocus mode
+4. Start automated acquisition — the software performs autofocus, imaging, and data saving unattended
+
+This platform was used to generate the 24.9 million single-cell image dataset for ESKAPe-ResNet training and validation.
+
 ## Software Environment and Dependencies
 
 All computational analyses were performed in **Python 3.8.20** with **PyTorch 1.13.1** (CUDA 11.6, cuDNN 8.4.0) using NVIDIA A100 (40 GB) GPUs with CUDA acceleration.
@@ -77,9 +97,6 @@ python build_training_batches.py
 ```
 
 > **Note:** Modify the input image paths and output directory in `build_training_batches.py` to match your local data structure.
-
-
-
 
 ### Load Pre-trained Weights
 
