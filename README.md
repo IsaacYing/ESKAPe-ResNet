@@ -103,12 +103,18 @@ python build_training_batches.py
 ```python
 import torch
 import torch.nn as nn
+import torchvision.models as torch_models
 
-# Initialize model
-model = initialize_model(num_classes=6, use_pretrained=False)
-model = model.to(DEVICE)
-model = nn.DataParallel(model)
-model = load_model_weights(model, 'ESKAPe_Resnet.pth')
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+model = torch_models.resnet50(pretrained=False)
+num_ftrs = model.fc.in_features
+model.fc = nn.Linear(num_ftrs, 6)
+model = model.to(device)
+
+state_dict = torch.load('ESKAPe_Resnet.pth', map_location=device)
+state_dict = {k.replace('module.', ''): v for k, v in state_dict.items()}
+model.load_state_dict(state_dict)
 model.eval()
 
 # Class order: 0=Eco, 1=Sau, 2=Kpn, 3=Aba, 4=Pae, 5=Efm
