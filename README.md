@@ -103,20 +103,14 @@ python build_training_batches.py
 ```python
 import torch
 import torch.nn as nn
-from torchvision import models
 
-# Initialize ResNet-50 architecture
-model = models.resnet50(pretrained=False)
-num_ftrs = model.fc.in_features
-model.fc = nn.Linear(num_ftrs, 6)  # 6 ESKAPE classes
-
-# Load trained weights (trained with DataParallel)
-state_dict = torch.load('ESKAPe_Resnet.pth', map_location='cpu')
-state_dict = {k.replace('module.', ''): v for k, v in state_dict.items()}
-model.load_state_dict(state_dict)
+# Initialize model
+model = initialize_model(num_classes=6, use_pretrained=False)
+model = model.to(DEVICE)
+model = nn.DataParallel(model)
+model = load_model_weights(model, 'ESKAPe_Resnet.pth')
 model.eval()
 
-# Ready for inference
 # Class order: 0=Eco, 1=Sau, 2=Kpn, 3=Aba, 4=Pae, 5=Efm
 ```
 
