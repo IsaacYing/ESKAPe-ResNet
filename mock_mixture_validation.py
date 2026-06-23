@@ -10,7 +10,7 @@ import tifffile as tif
 from sklearn.metrics import accuracy_score
 from PIL import Image
 from torchvision import transforms
-from cellpose import models as omni_models
+from cellpose_omni import models as omni_models
 from omnipose.utils import normalize99
 import cv2
 
@@ -92,18 +92,19 @@ test_transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-FILE_PATH = "path/to/image.tif"
-SAVE_DIR = "path/to/save"
+FILE_PATH = "path/to/your/image.tif"
+SAVE_DIR = "./results"
 os.makedirs(SAVE_DIR, exist_ok=True)
-MODEL_PATH = "path/to/model.pth"
+MODEL_PATH = "ESKAPe_Resnet.pth"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 CLASS_NAMES = ["Efm", "Sau", "Kpn", "Aba", "Pae", "Eco"]
 MODEL_TO_DISPLAY = [5, 1, 2, 3, 4, 0]
 COLORS = ['#00CCCC', '#00CC00', '#0000CC', '#CCCC00', '#CC00CC', '#CC0000']
 
-type_A = 3
-type_B = 2
+# Modify type_A and type_B according to the fluorescent channel labels of your test image
+type_A = 3 # Aba
+type_B = 4 # Pae
 
 model = initialize_model(num_classes=6, use_pretrained=False)
 model = nn.DataParallel(model).to(device)
@@ -140,10 +141,9 @@ for prop in props:
         trues.append(true_label)
 
 valid = sum(1 for c in cell_info if c['true'] is not None)
-acc = accuracy_score(trues, preds) * 100 if trues else 0
 counts = [sum(1 for c in cell_info if MODEL_TO_DISPLAY[c['pred']] == i) for i in range(6)]
 
-print(f"Total: {total}, Valid: {valid} ({valid/total*100:.1f}%), Acc: {acc:.1f}%")
+print(f"Total: {total}, Valid: {valid} ({valid/total*100:.1f}%)")
 
 fig, axes = plt.subplots(2, 3, figsize=(22, 13))
 
@@ -161,7 +161,7 @@ for i, (ax, ch, title) in enumerate(zip(axes.flat,
             show = (i == 3) or (i == 4 and c['pred'] == type_A) or (i == 5 and c['pred'] == type_B)
             if show:
                 color = COLORS[MODEL_TO_DISPLAY[c['pred']]]
-                ax.add_patch(Rectangle((x1, y1), x2-x1, y2-y1, linewidth=0.5, edgecolor=color, facecolor='none'))
+                ax.add_patch(Rectangle((x1, y1), x2-x1, y2-y1, linewidth=2, edgecolor=color, facecolor='none'))
 
 plt.tight_layout()
 fig.savefig(os.path.join(SAVE_DIR, "vis.png"), dpi=150, bbox_inches='tight')
