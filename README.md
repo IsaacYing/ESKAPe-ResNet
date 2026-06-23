@@ -23,11 +23,25 @@ ESKAPe-ResNet identifies six ESKAPe pathogens from single bacterial cells(e for 
 ## Repository Structure
 ```
 ESKAPe-ResNet/
-├── ESKAPe_Resnet.pth          # Pre-trained model weights (PyTorch)
-├── ESKAPe_Resnet.py           # Model training script
-├── build_training_batches.py  # Dataset batch construction for model training
-├── NT_controller.py           # Microscope control software
-└── README.md                   # This file
+├── ESKAPe_Resnet.pth              # Pre-trained model weights (PyTorch)
+├── ESKAPe_Resnet.py               # Model training script
+├── build_training_batches.py      # Dataset batch construction for model training
+├── NT_controller.py               # Microscope control software
+├── README.md                      # This file
+├── mock_mixture_validation/       # Mock mixture validation
+│   ├── mock_mixture_validation.py
+│   └── examples/
+│       ├── mock_mixture1_Aba_Pae.tif
+│       ├── mock_mixture2_Kpn_Aba.tif
+│       ├── mock_mixture3_Eco_Pae.tif
+│       └── mock_mixture4_Eco_Efm.tif
+└── clinical_samples_test/         # Clinical sample testing
+    ├── blood_sample_test.py
+    ├── respiratory_sample_test.py
+    └── examples/
+        ├── blood_sample_Aba.tif
+        ├── BALF_sample_Aba.tif
+        └── sputum_sample_Efm.tif
 ```
 
 ## Imaging Platform
@@ -127,6 +141,37 @@ python ESKAPe_Resnet.py
 ```
 
 > **Note:** Training requires your own dataset. Modify the data paths and class labels in `ESKAPe_Resnet.py` to match your local setup.
+
+## Validation and Testing
+
+### Mock Mixture Validation
+
+Validate species identification and quantification on fluorescence labeled mock mixtures:
+
+```bash
+python mock_mixture_validation.py
+```
+
+This script processes bright-field + dual-fluorescence TIFF images, performs cell segmentation, classifies each cell, and compares predictions against fluorescence-based ground truth. Example images are provided in mock_mixture_validation/examples/.
+
+> Note: Update FILE_PATH, MODEL_PATH, and type_A/type_B in the script to match your test image.
+
+### Clinical Sample Testing
+
+Test the model on clinical specimens — blood cultures, sputum, and BALF (bronchoalveolar lavage fluid):
+
+Blood sample (single-layer bright-field):
+```bash
+python blood_sample_test.py
+```
+
+Respiratory sample (sputum/BALF with Z-stack):
+```bash
+python respiratory_sample_test.py
+```
+
+Both scripts perform automated cell segmentation, single-cell classification, and generate a composite figure with bright-field overlay, prediction summary, and statistics table. Example images are provided in 
+> Note: Update FILE_PATH, MODEL_PATH, and GROUND_TRUTH_LABEL in each script to match your clinical sample.
 
 ## Performance Summary
 
